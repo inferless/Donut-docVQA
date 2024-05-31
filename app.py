@@ -1,26 +1,40 @@
-from vllm import LLM, SamplingParams
-from pathlib import Path
-from transformers import AutoTokenizer
+import re
+from transformers import DonutProcessor, VisionEncoderDecoderModel
+from PIL import Image
+import requests
+import torch
 
 class InferlessPythonModel:
     def initialize(self):
-        model_id = "rbgo/inferless-llama-3-8B"  # Specify the model repository ID
-        # Define sampling parameters for model generation
-        self.sampling_params = SamplingParams(temperature=0.7, top_p=0.95, max_tokens=128)
-        # Initialize the LLM object
-        self.llm = LLM(model=model_id)
-        self.tokenizer = AutoTokenizer.from_pretrained(model_id)
+        self.processor = DonutProcessor.from_pretrained("naver-clova-ix/donut-base-finetuned-docvqa")
+        self.model = VisionEncoderDecoderModel.from_pretrained("naver-clova-ix/donut-base-finetuned-docvqa")
+        
+        self.device = "cuda"
+        self.model.to(self.device)
         
     def infer(self,inputs):
-        prompts = inputs["prompt"]  # Extract the prompt from the input
-        chat_format = [{"role": "user", "content": prompts}]
-        text = self.tokenizer.apply_chat_template(chat_format,tokenize=False,add_generation_prompt=True)
-        result = self.llm.generate(text, self.sampling_params)
-        # Extract the generated text from the result
-        result_output = [output.outputs[0].text for output in result]
+        user_question = inputs["user_question"]
+        image_url = inputs["image_url"]
+        image = Image.open(requests.get(image_url, stream=True).raw)
+        prompt = f"<s_docvqa><s_question>{user_question}</s_question><s_answer>"
 
-        # Return a dictionary containing the result
-        return {'generated_text': result_output[0]}
+        decoder_input_ids = self.processor.tokenizer(prompt, add_special_tokens=False, return_tensors="pt").input_ids
+        pixel_values = self.processor(image, return_tensors="pt").pixel_values
+
+        outputs = self.model.generate(
+        pixel_values.to(self.device),
+        decoder_input_ids=decoder_input_ids.to(self.device),
+        max_length=self.model.decoder.config.max_position_embeddings,
+        pad_token_id=self.processor.tokenizer.pad_token_id,
+        eos_token_id=self.processor.tokenizer.eos_token_id,
+        use_cache=True,
+        bad_words_ids=[[self.processor.tokenizer.unk_token_id]],
+        return_dict_in_generate=True,)
+    
+        sequence = self.processor.batch_decode(outputs.sequences)[0]
+        sequence = sequence.replace(self.processor.tokenizer.eos_token, "").replace(self.processor.tokenizer.pad_token, "")
+        sequence = re.sub(r"<.*?>", "", sequence, count=1).strip()  # remove first task start token
+        return self.processor.token2json(sequence)
 
     def finalize(self):
         pass
