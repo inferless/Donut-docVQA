@@ -1,20 +1,6 @@
 # Tutorial - Deploy Llama-3 8B using Inferless
-Meta releases the [Llama 3](https://llama.meta.com/llama3/), the latest open LLM models in the Llama family. The [Llama 3](https://huggingface.co/collections/meta-llama/meta-llama-3-66214712577ca38149ebb2b6) models were trained on  8x more data on over 15 trillion tokens. It has a context length of 8K tokens and increases the vocabulary size of the tokenizer to tokenizer to 128,256 (from 32K tokens in the previous version).
-
-In this tutorial we will deploy [LLama-3 8B](https://huggingface.co/meta-llama/Meta-Llama-3-8B).
-
-## TL;DR:
-
-- Deployment of Meta-Llama-3-8B-hf model using [vLLM](https://github.com/vllm-project/vllm).
-- You can expect an average latency of `1.63 sec` and throughput of 78.65 tokens per second. This setup has an average cold start time of `13.30 sec`.
-- Dependencies defined in `inferless-runtime-config.yaml`.
-- GitHub/GitLab template creation with `app.py`, `inferless-runtime-config.yaml` and `inferless.yaml`.
-- Model class in `app.py` with `initialize`, `infer`, and `finalize` functions.
-- Custom runtime creation with necessary system and Python packages.
-- Model import via GitHub with `input_schema.py` file.
-- Recommended GPU: NVIDIA A100 for optimal performance.
-- Custom runtime selection in advanced configuration.
-- Final review and deployment on the Inferless platform.
+Donut is a model by Naver Clova, combining a vision encoder (Swin Transformer) and a text decoder (BART). Fine-tuned on the DocVQA dataset, it excels in document visual question answering without the need for OCR. It processes images into embeddings and generates text outputs. 
+Link to the model [donut-base-finetuned-docvqa](https://huggingface.co/naver-clova-ix/donut-base-finetuned-docvqa).
 
 ### Fork the Repository
 Get started by forking the repository. You can do this by clicking on the fork button in the top right corner of the repository page.
