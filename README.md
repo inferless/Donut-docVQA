@@ -1,4 +1,4 @@
-# Tutorial - Deploy Llama-3 8B using Inferless
+# Tutorial - Deploy Donut-DocVQA using Inferless
 Donut is a model by Naver Clova, combining a vision encoder (Swin Transformer) and a text decoder (BART). Fine-tuned on the DocVQA dataset, it excels in document visual question answering without the need for OCR. It processes images into embeddings and generates text outputs. 
 Link to the model [donut-base-finetuned-docvqa](https://huggingface.co/naver-clova-ix/donut-base-finetuned-docvqa).
 
