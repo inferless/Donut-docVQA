@@ -1,3 +1,6 @@
+import os
+os.environ["HF_HUB_ENABLE_HF_TRANSFER"]='1'
+from huggingface_hub import snapshot_download
 import re
 from transformers import DonutProcessor, VisionEncoderDecoderModel
 from PIL import Image
@@ -6,11 +9,10 @@ import torch
 
 class InferlessPythonModel:
     def initialize(self):
-        self.processor = DonutProcessor.from_pretrained("naver-clova-ix/donut-base-finetuned-docvqa")
-        self.model = VisionEncoderDecoderModel.from_pretrained("naver-clova-ix/donut-base-finetuned-docvqa")
-        
-        self.device = "cuda"
-        self.model.to(self.device)
+        model_id = "naver-clova-ix/donut-base-finetuned-docvqa"
+        snapshot_download(repo_id=model_id,allow_patterns=["*.bin"])
+        self.processor = DonutProcessor.from_pretrained(model_id)
+        self.model = VisionEncoderDecoderModel.from_pretrained(model_id).to("cuda")
         
     def infer(self,inputs):
         user_question = inputs["user_question"]
